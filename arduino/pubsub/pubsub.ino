@@ -1,8 +1,4 @@
-/*
- * rosserial PubSub Example
- * Prints "hello world!" and toggles led
- */
-
+/** Throwing pwm subscriber **/
 #include <ros.h>
 #include <std_msgs/Int16.h>
 
@@ -27,17 +23,23 @@ void setup()
   pinMode(pwm_r, OUTPUT);
   pinMode(dir_l, OUTPUT);
   pinMode(dir_r, OUTPUT);
-  
+  pinMode(LED_BUILTIN, OUTPUT);
   nh.initNode();
   nh.subscribe(sub);
 }
 
 void loop()
 {
-  digitalWrite(dir_l, HIGH);
-  digitalWrite(dir_r, HIGH);
+  digitalWrite(dir_l, LOW);
+  digitalWrite(dir_r, LOW);
   analogWrite(pwm_l, motor_pwm);
   analogWrite(pwm_r, motor_pwm);
+  if(motor_pwm < 45){
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+  else {
+    digitalWrite(LED_BUILTIN, LOW);
+  }
   nh.spinOnce();
   delay(20);
 }

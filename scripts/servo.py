@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+import rospy
 from std_msgs.msg import Int16
 
 rospy.init_node("servo_node")
@@ -10,7 +13,6 @@ class Main():
 
     def run(self):
         while not rospy.is_shutdown():
-
             num = int(input("Enter the angle: "))
             rospy.loginfo(f"Angle: {num}")
             self.pub.publish(num)
