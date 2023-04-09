@@ -16,6 +16,7 @@ class Main():
             num = int(input("Enter the pwm: "))
             rospy.loginfo(f"Pwm: {num}")
             self.pub.publish(num)
+            
             self.rate.sleep()
 
 

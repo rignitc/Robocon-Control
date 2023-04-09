@@ -1,6 +1,9 @@
 /** Throwing pwm subscriber **/
 #include <ros.h>
 #include <std_msgs/Int16.h>
+#include <Servo.h>
+
+Servo myservo;
 
 ros::NodeHandle  nh;
 
@@ -15,10 +18,15 @@ void messageCb( const std_msgs::Int16& pwm){
   motor_pwm = pwm.data;   
 }
 
-ros::Subscriber<std_msgs::Int16> sub("pwm", messageCb );
+void servoCb( const std_msgs::Int16& theta) {
+  myservo.write(theta.data);
+}
 
+ros::Subscriber<std_msgs::Int16> sub("pwm", messageCb );
+ros::Subscriber<std_msgs::Int16> servo_sub("servo", servoCb);
 void setup()
 {
+  myservo.attach(9);
   pinMode(pwm_l, OUTPUT);
   pinMode(pwm_r, OUTPUT);
   pinMode(dir_l, OUTPUT);
@@ -26,6 +34,7 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   nh.initNode();
   nh.subscribe(sub);
+  nh.subscribe(servo_sub);
 }
 
 void loop()
