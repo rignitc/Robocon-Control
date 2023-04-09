@@ -20,8 +20,8 @@ yaw= Int32()
 pitch= Int32()
 yaw_lock=0  #0 locked 1 unlocked
 pitch_lock=0
-screw_power= Bool()
-belt_power= Bool()
+screw_power= Int32()
+belt_power= Int32()
 flick= Bool()
 
 def map_range(x, in_min, in_max, out_min, out_max):
@@ -60,18 +60,12 @@ def yp_finder(data):
     if(yaw_lock==1):
         yaw.data=int(map_range(yaw_decimal,-1,1,-30,30))
     if(pitch_lock==1):
-        pitch.data=int(map_range(pitch_decimal,-1,1,30,60))
+        pitch.data=int(map_range(pitch_decimal,-1,1,-255,255))
  
 def pick_control(data):
     global screw_power,belt_power,flick
-    if(data.axes[6]==1):
-        screw_power.data=True       #should move up for a true and should move down on next false
-    elif(data.axes[6]==-1):
-        screw_power.data=False
-    if(-data.axes[5]==1):
-        belt_power.data=True
-    elif(-data.axes[5]==-1):
-        belt_power.data=False
+    screw_power.data=int(data.axes[6])
+    belt_power.data=-int(data.axes[5])
     if(data.buttons[6]==1):
         flick.data=True
     else:
@@ -98,8 +92,8 @@ def talker():
     pub_loco = rospy.Publisher('locomotion', Quaternion, queue_size=10)
     pub_yaw = rospy.Publisher('target_yaw', Int32, queue_size=10)
     pub_pitch = rospy.Publisher('target_pitch', Int32, queue_size=10)
-    pub_screw = rospy.Publisher('screw_power', Bool, queue_size=10)        #these screw and belt can be combined into a single custom message
-    pub_belt = rospy.Publisher('belt_power', Bool, queue_size=10)
+    pub_screw = rospy.Publisher('screw_power', Int32, queue_size=10)        #these screw and belt can be combined into a single custom message
+    pub_belt = rospy.Publisher('belt_power', Int32, queue_size=10)
     pub_flick = rospy.Publisher('flick', Bool, queue_size=10)
     
 
