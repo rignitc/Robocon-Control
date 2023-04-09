@@ -1,6 +1,14 @@
 //#define ROSSERIAL_ARDUINO_TCP
 #include <ros.h>
 #include <geometry_msgs/Quaternion.h>
+#include <std_msgs/Int32.h>
+
+// #define yaw_pwm 6
+// #define yaw_dir 6
+#define pitch_pwm 12
+#define pitch_dir 13
+
+
 
 
 
@@ -29,8 +37,38 @@ Serial.println(PWM1);
 
 }
 
+// void callback_yaw(const std_msgs::Int32 &msg)
+// {
+//   if (msg.data<0)
+//   {
+//     digitalWrite(yaw_dir,HIGH);
+//     analogWrite(yaw_pwm,msg.data);
+//   }
+//   else{
+//     digitalWrite(yaw_dir,LOW);
+//     analogWrite(yaw_pwm,msg.data);
+//   }
+  
+// }
+
+void callback_pitch(const std_msgs::Int32 &msg)
+{
+    if (msg.data<0)
+  {
+    digitalWrite(pitch_dir,HIGH);
+    analogWrite(pitch_pwm,msg.data);
+  }
+  else{
+    digitalWrite(pitch_dir,LOW);
+    analogWrite(pitch_pwm,msg.data);
+  }
+
+}
+
 //Subscriber
 ros::Subscriber<geometry_msgs::Quaternion> sub1("keyboard_message1", &callback1);
+ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
+// ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
 
 
 void setup() {
@@ -38,6 +76,9 @@ void setup() {
  //NODE 
  nh.initNode();
  nh.subscribe(sub1);
+ nh.subscribe(sub_pitch);
+//  nh.subscribe(sub_yaw);
+
  
 
 Serial.begin(57600);
@@ -60,6 +101,12 @@ Serial.begin(57600);
 
  pinMode(2,OUTPUT);
  pinMode(3,OUTPUT);
+
+//  pinMode(yaw_dir,OUTPUT);
+//  pinMode(yaw_pwm,OUTPUT);
+ pinMode(pitch_dir,OUTPUT);
+ pinMode(pitch_pwm,OUTPUT);
+
 
 
  
