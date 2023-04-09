@@ -1,21 +1,34 @@
 /** Throwing pwm subscriber **/
 #include <ros.h>
 #include <std_msgs/Int16.h>
+#include <std_msgs/Bool.h>
 #include <Servo.h>
 
 Servo myservo;
 
 ros::NodeHandle  nh;
 
-int motor_pwm = 0;
+
 
 int pwm_l = 2;
 int pwm_r = 4;
 int dir_l = 3;
 int dir_r = 5;
 
-void messageCb( const std_msgs::Int16& pwm){
-  motor_pwm = pwm.data;   
+int pwm_index = 0;
+int pwm_array[] = {0, 160, 200, 255};
+int motor_pwm = pwm_array[pwm_index];
+
+
+//void messageCb( const std_msgs::Int16& pwm){
+//  motor_pwm = pwm.data;   
+//}
+
+void pwmCb(const std_msgs::Bool& toggle) {
+  if(toggle.data){
+    pwm_index = (pwm_index + 1) % 4;
+    motor_pwm = pwm_array[pwm_index];
+  }
 }
 
 void servoCb( const std_msgs::Int16& theta) {
