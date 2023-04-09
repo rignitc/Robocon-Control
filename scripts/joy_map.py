@@ -23,6 +23,7 @@ pitch_lock=0
 screw_power= Int32()
 belt_power= Int32()
 flick= Bool()
+speed= Bool()
 
 def map_range(x, in_min, in_max, out_min, out_max):
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
@@ -63,13 +64,17 @@ def yp_finder(data):
         pitch.data=int(map_range(pitch_decimal,-1,1,-255,255))
  
 def pick_control(data):
-    global screw_power,belt_power,flick
+    global screw_power,belt_power,flick,speed
     screw_power.data=int(data.axes[6])
     belt_power.data=-int(data.axes[5])
     if(data.buttons[6]==1):
         flick.data=True
     else:
         flick.data=False
+    if(data.buttons[4]==1):
+        speed.data=True
+    else:
+        speed.data=False
     
     
 
@@ -95,6 +100,8 @@ def talker():
     pub_screw = rospy.Publisher('screw_power', Int32, queue_size=10)        #these screw and belt can be combined into a single custom message
     pub_belt = rospy.Publisher('belt_power', Int32, queue_size=10)
     pub_flick = rospy.Publisher('flick', Bool, queue_size=10)
+    pub_speed = rospy.Publisher('speed', Bool, queue_size=10)
+
     
 
     rospy.init_node('talker', anonymous=True)
@@ -107,7 +114,9 @@ def talker():
         pub_pitch.publish(pitch)
         pub_screw.publish(screw_power)    
         pub_belt.publish(belt_power)    
-        pub_flick.publish(flick)    
+        pub_flick.publish(flick)   
+        pub_speed.publish(speed)    
+
 
         rate.sleep()
 
