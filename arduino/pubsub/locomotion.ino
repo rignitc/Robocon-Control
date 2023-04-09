@@ -2,16 +2,19 @@
 #include <ros.h>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Bool.h>
+#include <Servo.h>
 
 // #define yaw_pwm 6
 // #define yaw_dir 6
 #define pitch_pwm 12
 #define pitch_dir 13
-#define motor_pwm_l_pin 1
-#define motor_pwm_r_pin 2
-#define motor_dir_r_pin 3
-#define motor_dir_l_pin 4
+#define motor_pwm_l_pin 10
+#define motor_pwm_r_pin 11
+#define motor_dir_r_pin 22
+#define motor_dir_l_pin 24
+#define flick_servo_pin 1
 
 
 
@@ -28,6 +31,7 @@ int PWM4;
 int pwm_index = 0;
 int pwm_array[] = {0, 160, 200, 255};
 int motor_pwm = pwm_array[pwm_index];
+Servo flick_servo;
 
 //float dir;
 
@@ -82,11 +86,16 @@ void callback_speed(const std_msgs::Bool &msg){
   }
 }
 
+void callback_flick(const std_msgs::Int32 &msg){
+  flick_servo.write(int(msg.data));
+}
+
 //Subscriber
 ros::Subscriber<geometry_msgs::Quaternion> sub1("keyboard_message1", &callback1);
 ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
 // ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
 ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
+ros::Subscriber<std_msgs::Int16> sub_flick("servo", &callback_flick);
 
 
 
@@ -97,6 +106,8 @@ void setup() {
  nh.subscribe(sub1);
  nh.subscribe(sub_pitch);
  nh.subscribe(sub_speed);
+ nh.subscribe(sub_flick);
+
 
 //  nh.subscribe(sub_yaw);
 
@@ -132,6 +143,8 @@ Serial.begin(57600);
  pinMode(motor_pwm_r_pin,OUTPUT);
  pinMode(motor_dir_l_pin,OUTPUT);
  pinMode(motor_dir_r_pin,OUTPUT);
+
+ flick_servo.attach(flick_servo_pin);
 
  digitalWrite(motor_dir_l_pin,LOW);
  digitalWrite(motor_dir_r_pin,LOW);
