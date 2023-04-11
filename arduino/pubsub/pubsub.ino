@@ -35,11 +35,12 @@ void servoCb( const std_msgs::Int16& theta) {
   myservo.write(theta.data);
 }
 
-ros::Subscriber<std_msgs::Int16> sub("pwm", messageCb );
+ros::Subscriber<std_msgs::Int16> sub("pwm", pwmCb );
 ros::Subscriber<std_msgs::Int16> servo_sub("servo", servoCb);
+
 void setup()
 {
-  myservo.attach(9);
+  myservo.attach(8);
   pinMode(pwm_l, OUTPUT);
   pinMode(pwm_r, OUTPUT);
   pinMode(dir_l, OUTPUT);

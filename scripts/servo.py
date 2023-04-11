@@ -17,16 +17,16 @@ class Main():
 
     def run(self):
         while not rospy.is_shutdown():
-            # num = int(input("Enter angle: "))
-            # rospy.loginfo(f"Angle: {num}")
-            # self.pub.publish(num)
-            # self.rate.sleep()
-            if self.flick:
-                rospy.loginfo(f"Shooting")
-                self.pub.publish(90)
-                time.sleep(1)
-                self.pub.publish(0)
+            num = int(input("Enter angle: "))
+            rospy.loginfo(f"Angle: {num}")
+            self.pub.publish(num)
             self.rate.sleep()
+            # if self.flick:
+            #     rospy.loginfo(f"Shooting")
+            #     self.pub.publish(90)
+            #     time.sleep(1)
+            #     self.pub.publish(0)
+            # self.rate.sleep()
         
     def callback(self, flick):
         self.flick = flick.data
