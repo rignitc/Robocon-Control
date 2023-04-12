@@ -8,19 +8,13 @@
 
 // #define yaw_pwm 6
 // #define yaw_dir 6
-#define pitch_pwm 12
-#define pitch_dir 13
-#define motor_pwm_l_pin 10
-#define motor_pwm_r_pin 11
-#define motor_dir_r_pin 22
-#define motor_dir_l_pin 24
-#define flick_servo_pin 1
-
-
-
-
-
-
+//#define pitch_pwm 12
+//#define pitch_dir 13
+//#define motor_pwm_l_pin 10
+//#define motor_pwm_r_pin 11
+//#define motor_dir_r_pin 22
+//#define motor_dir_l_pin 24
+//#define flick_servo_pin 1
 
 ros::NodeHandle nh;
 
@@ -65,37 +59,37 @@ Serial.println(PWM1);
   
 // }
 
-void callback_pitch(const std_msgs::Int32 &msg)
-{
-    if (msg.data<0)
-  {
-    digitalWrite(pitch_dir,HIGH);
-    analogWrite(pitch_pwm,-msg.data);
-  }
-  else{
-    digitalWrite(pitch_dir,LOW);
-    analogWrite(pitch_pwm,msg.data);
-  }
+//void callback_pitch(const std_msgs::Int32 &msg)
+//{
+//    if (msg.data<0)
+//  {
+//    digitalWrite(pitch_dir,HIGH);
+//    analogWrite(pitch_pwm,-msg.data);
+//  }
+//  else{
+//    digitalWrite(pitch_dir,LOW);
+//    analogWrite(pitch_pwm,msg.data);
+//  }
+//
+//}
 
-}
-
-void callback_speed(const std_msgs::Bool &msg){
-  if(msg.data){
-    pwm_index = (pwm_index + 1) % 4;
-    motor_pwm = pwm_array[pwm_index];
-  }
-}
-
-void callback_flick(const std_msgs::Int32 &msg){
-  flick_servo.write(int(msg.data));
-}
+//void callback_speed(const std_msgs::Bool &msg){
+//  if(msg.data){
+//    pwm_index = (pwm_index + 1) % 4;
+//    motor_pwm = pwm_array[pwm_index];
+//  }
+//}
+//
+//void callback_flick(const std_msgs::Int32 &msg){
+//  flick_servo.write(int(msg.data));
+//}
 
 //Subscriber
 ros::Subscriber<geometry_msgs::Quaternion> sub1("keyboard_message1", &callback1);
-ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
-// ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
-ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
-ros::Subscriber<std_msgs::Int16> sub_flick("servo", &callback_flick);
+//ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
+//// ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
+//ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
+//ros::Subscriber<std_msgs::Int16> sub_flick("servo", &callback_flick);
 
 
 
@@ -104,10 +98,10 @@ void setup() {
  //NODE 
  nh.initNode();
  nh.subscribe(sub1);
- nh.subscribe(sub_pitch);
- nh.subscribe(sub_speed);
- nh.subscribe(sub_flick);
-
+// nh.subscribe(sub_pitch);
+// nh.subscribe(sub_speed);
+// nh.subscribe(sub_flick);
+//
 
 //  nh.subscribe(sub_yaw);
 
@@ -135,20 +129,20 @@ Serial.begin(57600);
  pinMode(3,OUTPUT);
 
 //  pinMode(yaw_dir,OUTPUT);
-//  pinMode(yaw_pwm,OUTPUT);
- pinMode(pitch_dir,OUTPUT);
- pinMode(pitch_pwm,OUTPUT);
-
- pinMode(motor_pwm_l_pin,OUTPUT);
- pinMode(motor_pwm_r_pin,OUTPUT);
- pinMode(motor_dir_l_pin,OUTPUT);
- pinMode(motor_dir_r_pin,OUTPUT);
-
- flick_servo.attach(flick_servo_pin);
-
- digitalWrite(motor_dir_l_pin,LOW);
- digitalWrite(motor_dir_r_pin,LOW);
-
+////  pinMode(yaw_pwm,OUTPUT);
+// pinMode(pitch_dir,OUTPUT);
+// pinMode(pitch_pwm,OUTPUT);
+//
+// pinMode(motor_pwm_l_pin,OUTPUT);
+// pinMode(motor_pwm_r_pin,OUTPUT);
+// pinMode(motor_dir_l_pin,OUTPUT);
+// pinMode(motor_dir_r_pin,OUTPUT);
+//
+// flick_servo.attach(flick_servo_pin);
+//
+// digitalWrite(motor_dir_l_pin,LOW);
+// digitalWrite(motor_dir_r_pin,LOW);
+//
 
 
 
@@ -178,8 +172,8 @@ void loop() {
   analogWrite(2,abs(PWM4));
  digitalWrite(3,PWM4<0);
 
-  analogWrite(motor_pwm_l_pin,motor_pwm);
-  analogWrite(motor_pwm_r_pin,motor_pwm);
+//  analogWrite(motor_pwm_l_pin,motor_pwm);
+//  analogWrite(motor_pwm_r_pin,motor_pwm);
 
   analogWrite(2,abs(PWM4));
  

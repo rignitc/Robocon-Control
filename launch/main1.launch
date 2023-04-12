@@ -3,4 +3,5 @@
     <node pkg="rosserial_python" type="serial_node.py" name="serial_node2" output="screen" args="/dev/ttyUSB0"/>
     <node pkg="robocon_control" type="joy_map.py" name="joy_map" output="screen"/>
     <node pkg="joy" type="joy_node" name="joy_node" output="screen"/>
+    <node pkg="robocon_control" type="er_loc_node.py" name="er_loc_node" output="screen"/>
 </launch>
