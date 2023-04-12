@@ -4,7 +4,7 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int16.h>
 #include <std_msgs/Bool.h>
-#include <Servo.h>
+#include "CytronMotorDriver.h"
 
 // #define yaw_pwm 6
 // #define yaw_dir 6
@@ -14,15 +14,12 @@
 //#define motor_pwm_r_pin 11
 //#define motor_dir_r_pin 22
 #define motor_dir_l_pin 36
-#define flick_servo_pin 1
-
-
-
-
 
 
 
 ros::NodeHandle nh;
+CytronMD actuator(PWM_DIR,pitch_pwm,pitch_dir);
+//CytronMD motor_l(PWM_DIR,motor_pwm_l,motor)
 
 int PWM1;
 int PWM2;
@@ -31,11 +28,9 @@ int PWM4;
 int pwm_index = 0;
 int pwm_array[] = {0, 160, 200, 255};
 int motor_pwm = pwm_array[pwm_index];
-Servo flick_servo;
+int act_pwm;
 
-//float dir;
 
-//Callback START ---------------
 
 
 
@@ -67,18 +62,7 @@ Serial.println(PWM1);
 
 void callback_pitch(const std_msgs::Int32 &msg)
 {
-    if (msg.data<0)
-  {
-    digitalWrite(pitch_dir,HIGH);
-//    analogWrite(pitch_pwm,-msg.data);
-  digitalWrite(pitch_pwm,HIGH);
-  }
-  else{
-    digitalWrite(pitch_dir,LOW);
-//    analogWrite(pitch_pwm,msg.data);
-digitalWrite(pitch_pwm,HIGH);
-  }
-
+act_pwm=msg.data;
 }
 
 void callback_speed(const std_msgs::Bool &msg){
@@ -88,16 +72,11 @@ void callback_speed(const std_msgs::Bool &msg){
   }
 }
 
-void callback_flick(const std_msgs::Int32 &msg){
-  flick_servo.write(int(msg.data));
-}
-
 //Subscriber
 ros::Subscriber<geometry_msgs::Quaternion> sub1("keyboard_message1", &callback1);
 ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
 // ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
 ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
-ros::Subscriber<std_msgs::Int16> sub_flick("servo", &callback_flick);
 
 
 
@@ -108,7 +87,6 @@ void setup() {
  nh.subscribe(sub1);
  nh.subscribe(sub_pitch);
  nh.subscribe(sub_speed);
- nh.subscribe(sub_flick);
 
 
 //  nh.subscribe(sub_yaw);
@@ -116,7 +94,7 @@ void setup() {
  
 
 Serial.begin(57600);
- Serial.println("node is initialised");
+Serial.println("node is initialised");
  
  
  
@@ -138,26 +116,16 @@ Serial.begin(57600);
 
 //  pinMode(yaw_dir,OUTPUT);
 //  pinMode(yaw_pwm,OUTPUT);
- pinMode(pitch_dir,OUTPUT);
- pinMode(pitch_pwm,OUTPUT);
+// pinMode(pitch_dir,OUTPUT);
+// pinMode(pitch_pwm,OUTPUT);
 
  pinMode(motor_pwm_l_pin,OUTPUT);
-// pinMode(motor_pwm_r_pin,OUTPUT);
  pinMode(motor_dir_l_pin,OUTPUT);
-// pinMode(motor_dir_r_pin,OUTPUT);
 
- flick_servo.attach(flick_servo_pin);
+// flick_servo.attach(flick_servo_pin);
 
  digitalWrite(motor_dir_l_pin,LOW);
 // digitalWrite(motor_dir_r_pin,LOW);
-
-
-
-
- 
- 
-//attachInterrupt(digitalPinToInterrupt(5), right_wheel_pulse,CHANGE);
-//attachInterrupt(digitalPinToInterrupt(4),right_wheel_pulse_b,CHANGE);
  
  
  
@@ -184,6 +152,7 @@ void loop() {
 //  analogWrite(motor_pwm_r_pin,motor_pwm);
 
   analogWrite(2,abs(PWM4));
+  actuator.setSpeed(act_pwm);
  
 // 
  nh.spinOnce();
