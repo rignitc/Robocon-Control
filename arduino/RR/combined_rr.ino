@@ -14,7 +14,7 @@
 //#define motor_pwm_r_pin 11
 //#define motor_dir_r_pin 22
 #define motor_dir_l_pin 36
-#define wheel1_pwm 2
+#define wheel1_pwm 13
 #define wheel2_pwm 3
 #define wheel3_pwm 4
 #define wheel4_pwm 5
@@ -40,12 +40,14 @@ int PWM3;
 int PWM4;
 int pwm_index = 0;
 int pwm_array[] = {0, 160, 200, 255};
-int multiplier_array[] = {1, 2, 3, 4};
+float multiplier_array[] = {0.25, 1};
 int multiplier_index=0;
 
 int motor_pwm = pwm_array[pwm_index];
 int act_pwm;
-int multiplier=1;
+float multiplier=1;
+int prev_speed_time=0;
+int prev_locoSpeed_time=0;
 
 
 
@@ -57,7 +59,7 @@ PWM1 = -1*msg.x;
 PWM2 = 1*msg.y;
 PWM3 = 1*msg.z;
 PWM4 = -1*msg.w;
-Serial.println(PWM1);
+//Serial.println(PWM1);
 
 //receives both +ve and negative values acc to motion needed )
 
@@ -83,15 +85,17 @@ act_pwm=msg.data;
 }
 
 void callback_speed(const std_msgs::Bool &msg){
-  if(msg.data){
+  if(((millis()-prev_speed_time)>1000)&&(msg.data)){
+    prev_speed_time=millis();
     pwm_index = (pwm_index + 1) % 4;
     motor_pwm = pwm_array[pwm_index];
   }
 }
 
 void locoSpeed(const std_msgs::Bool &msg){
-  if(msg.data){
-    multiplier_index = (multiplier_index + 1) % 4;
+  if(((millis()-prev_locoSpeed_time)>1000)&&(msg.data)){
+    prev_locoSpeed_time=millis();
+    multiplier_index = (multiplier_index + 1) % 2;
     multiplier = multiplier_array[multiplier_index];
   }
 }
@@ -113,6 +117,7 @@ void setup() {
  nh.subscribe(sub1);
  nh.subscribe(sub_pitch);
  nh.subscribe(sub_speed);
+ nh.subscribe(sub_locoSpeed);
 
 
 //  nh.subscribe(sub_yaw);
@@ -150,7 +155,7 @@ Serial.println("node is initialised");
 
 // flick_servo.attach(flick_servo_pin);
 
- digitalWrite(motor_dir_l_pin,LOW);
+ digitalWrite(motor_dir_l_pin,HIGH);
 // digitalWrite(motor_dir_r_pin,LOW);
  
  
@@ -160,19 +165,6 @@ Serial.println("node is initialised");
 }
 
 void loop() {
-
-  //if forward pwm value is +ve (let),then -ve pwm makes opp rotation
-//  analogWrite(8,abs(PWM1));
-//  digitalWrite(9,PWM1<0);
-// //
-//   analogWrite(6,abs(PWM2));
-//  digitalWrite(7,PWM2<0);
-// //
-//   analogWrite(4,abs(PWM3));
-//  digitalWrite(5,PWM3<0);
-
-//   analogWrite(2,abs(PWM4));
-//  digitalWrite(3,PWM4<0);
 wheel1.setSpeed(PWM1*multiplier);
 wheel2.setSpeed(PWM2*multiplier);
 wheel3.setSpeed(PWM3*multiplier);
