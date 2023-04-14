@@ -49,12 +49,12 @@ def loco_finder(data):
     loco.x=-data.axes[0]
     loco.y=data.axes[1]
     if(data.buttons[0]==1):
-        loco.w=1
-    elif(data.buttons[1]==1):
         loco.w=-1
+    elif(data.buttons[1]==1):
+        loco.w=1
     else:
         loco.w=0
-    if(data.buttons[10]==1):
+    if(data.buttons[3]==1):
         locoSpeed.data=True
     else:
         locoSpeed.data=False
