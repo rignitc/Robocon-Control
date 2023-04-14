@@ -6,6 +6,7 @@
 #include <std_msgs/Bool.h>
 #include "CytronMotorDriver.h"
 #include "DRV8825.h"
+#include <Servo.h>
 
 // #define yaw_pwm 6
 // #define yaw_dir 6
@@ -28,6 +29,7 @@
 #define hSTEP_PIN 11
 #define vDIRECTION_PIN 8
 #define vSTEP_PIN 9
+#define ser_pin 44
 
 ros::NodeHandle nh;
 CytronMD actuator(PWM_DIR, pitch_pwm, pitch_dir);
@@ -37,6 +39,7 @@ CytronMD wheel3(PWM_DIR, wheel3_pwm, wheel3_dir);
 CytronMD wheel4(PWM_DIR, wheel4_pwm, wheel4_dir);
 DRV8825 hstepper;
 DRV8825 vstepper;
+Servo myservo;
 
 
 // CytronMD motor_l(PWM_DIR,motor_pwm_l,motor)
@@ -49,12 +52,25 @@ int pwm_index = 0;
 int pwm_array[] = {0, 160, 200, 255};
 float multiplier_array[] = {0.25, 1};
 int multiplier_index = 0;
+int value=0;
+
 
 int motor_pwm = pwm_array[pwm_index];
 int act_pwm;
 float multiplier = 1;
 int prev_speed_time = 0;
 int prev_locoSpeed_time = 0;
+
+void servoCb( const std_msgs::Bool& msg){
+  if (msg.data)
+  {
+     value=135;
+  }
+  else
+  {
+    value=0;
+  }
+}
 
 void VStepperCB(const std_msgs::Int32 &vtrigger)
 {
@@ -158,6 +174,7 @@ ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
 ros::Subscriber<std_msgs::Bool> sub_locoSpeed("locoSpeed", &locoSpeed);
 ros::Subscriber<std_msgs::Int32> vert("screw_power", &VStepperCB);
 ros::Subscriber<std_msgs::Int32> hori("belt_power", &HStepperCB);
+ros::Subscriber<std_msgs::Bool> sub_flick("flick", &servoCb );
 
 void setup()
 {
@@ -165,6 +182,7 @@ void setup()
   vstepper.begin(vDIRECTION_PIN, vSTEP_PIN);
   pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
   digitalWrite(Enable, LOW);
+  myservo.attach(ser_pin);
   // NODE
   nh.initNode();
   nh.subscribe(sub1);
@@ -173,6 +191,8 @@ void setup()
   nh.subscribe(sub_locoSpeed);
   nh.subscribe(vert);
   nh.subscribe(hori);
+  nh.subscribe(sub_flick);
+
 //  nh.subscribe(sub_yaw);
 
 Serial.begin(57600);
@@ -215,6 +235,7 @@ void loop()
   wheel2.setSpeed(PWM2 * multiplier);
   wheel3.setSpeed(PWM3 * multiplier);
   wheel4.setSpeed(PWM4 * multiplier);
+  myservo.write(value);
 
   analogWrite(motor_pwm_l_pin, motor_pwm);
   //  analogWrite(motor_pwm_r_pin,motor_pwm);
