@@ -24,6 +24,7 @@ screw_power= Int32()
 belt_power= Int32()
 flick= Bool()
 speed= Bool()
+locoSpeed = Bool()
 
 def map_range(x, in_min, in_max, out_min, out_max):
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
@@ -31,10 +32,10 @@ def map_range(x, in_min, in_max, out_min, out_max):
 def changer(value): 
     if(value==0):
         value=1
-        # print('unlocked')
+        print('unlocked')
     elif(value==1):
         value=0
-        # print('locked')
+        print('locked')
     else:
         rospy.loginfo("error in changer")
         rospy.signal_shutdown
@@ -53,6 +54,12 @@ def loco_finder(data):
         loco.w=-1
     else:
         loco.w=0
+    if(data.buttons[10]==1):
+        locoSpeed.data=True
+    else:
+        locoSpeed.data=False
+
+
 
 def yp_finder(data):
     global yaw,pitch,lock,yaw_lock,pitch_lock
@@ -101,6 +108,8 @@ def talker():
     pub_belt = rospy.Publisher('belt_power', Int32, queue_size=10)
     pub_flick = rospy.Publisher('flick', Bool, queue_size=10)
     pub_speed = rospy.Publisher('speed', Bool, queue_size=10)
+    pub_locoSpeed = rospy.Publisher('locoSpeed', Bool, queue_size=10)
+
 
     
 
@@ -115,7 +124,8 @@ def talker():
         pub_screw.publish(screw_power)    
         pub_belt.publish(belt_power)    
         pub_flick.publish(flick)   
-        pub_speed.publish(speed)    
+        pub_speed.publish(speed)
+        pub_locoSpeed.publish(locoSpeed)    
 
 
         rate.sleep()
