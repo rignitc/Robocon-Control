@@ -5,7 +5,7 @@
     <node pkg="Robocon_control" name="joystick" type="joy_map.py" output="screen"/>
     <node pkg="joy" name="taker" type="joy_node"/>
     <node pkg="rosserial_python" name="arduino_connect" type="serial_node.py" output="screen">
-        <param name="_port" value="/dev/ttyUSB0"/>
+        <param name="port" value="/dev/ttyUSB0"/>
     </node>
 
   </group>
