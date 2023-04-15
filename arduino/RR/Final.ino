@@ -10,7 +10,7 @@
 
 // #define yaw_pwm 6
 // #define yaw_dir 6
-#define pitch_pwm 7
+#define pitch_pwm 46
 #define pitch_dir 37
 #define motor_pwm_l_pin 6
 // #define motor_pwm_r_pin 11
