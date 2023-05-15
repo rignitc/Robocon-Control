@@ -25,6 +25,10 @@
 #define wheel3_dir 34
 #define wheel4_dir 35
 #define Enable 12
+#define hDIRECTION_PIN 10
+#define hSTEP_PIN 11
+#define vDIRECTION_PIN 8
+#define vSTEP_PIN 9
 #define ser_pin 44
 
 ros::NodeHandle nh;
@@ -33,6 +37,8 @@ CytronMD wheel1(PWM_DIR, wheel1_pwm, wheel1_dir);
 CytronMD wheel2(PWM_DIR, wheel2_pwm, wheel2_dir);
 CytronMD wheel3(PWM_DIR, wheel3_pwm, wheel3_dir);
 CytronMD wheel4(PWM_DIR, wheel4_pwm, wheel4_dir);
+DRV8825 hstepper;
+DRV8825 vstepper;
 Servo myservo;
 
 
@@ -54,12 +60,14 @@ int act_pwm;
 float multiplier = 1;
 int prev_speed_time = 0;
 int prev_locoSpeed_time = 0;
+const int stepsPerRevolution=200;
+int step_1 = 0;
+int step_2 = 0;
 
 void servoCb( const std_msgs::Bool& msg){
   if (msg.data)
   {
      value=65;
-     
   }
   else
   {
@@ -67,9 +75,45 @@ void servoCb( const std_msgs::Bool& msg){
   }
 }
 
+void VStepperCB(const std_msgs::Int32 &vtrigger)
+{
+  if (vtrigger.data != 0)
+  {
+    step_1 = 1;
+    if (vtrigger.data == 1)
+    {
+      digitalWrite(vDIRECTION_PIN, HIGH);
+    }
+    else
+    {
+      digitalWrite(vDIRECTION_PIN, LOW);
+    }
+  }
+  else
+  {
+    step_1 = 0;
+  }
+}
 
-
-
+void HStepperCB(const std_msgs::Int32 &htrigger)
+{
+  if (htrigger.data != 0)
+  {
+    step_2 = 1;
+    if (htrigger.data == 1)
+    {
+      digitalWrite(hDIRECTION_PIN, HIGH);
+    }
+    else
+    {
+      digitalWrite(hDIRECTION_PIN, LOW);
+    }
+  }
+  else
+  {
+    step_2 = 0;
+  }
+}
 void callback1(const geometry_msgs::Quaternion &msg)
 {
 
@@ -127,10 +171,14 @@ ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
 // ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
 ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
 ros::Subscriber<std_msgs::Bool> sub_locoSpeed("locoSpeed", &locoSpeed);
+ros::Subscriber<std_msgs::Int32> vert("screw_power", &VStepperCB);
+ros::Subscriber<std_msgs::Int32> hori("belt_power", &HStepperCB);
 ros::Subscriber<std_msgs::Bool> sub_flick("flick", &servoCb );
 
 void setup()
 {
+//  hstepper.begin(hDIRECTION_PIN, hSTEP_PIN);
+//  vstepper.begin(vDIRECTION_PIN, vSTEP_PIN);
   pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
   digitalWrite(Enable, LOW);
   myservo.attach(ser_pin);
@@ -140,6 +188,8 @@ void setup()
   nh.subscribe(sub_pitch);
   nh.subscribe(sub_speed);
   nh.subscribe(sub_locoSpeed);
+  nh.subscribe(vert);
+  nh.subscribe(hori);
   nh.subscribe(sub_flick);
 
 //  nh.subscribe(sub_yaw);
@@ -194,6 +244,32 @@ void loop()
 
   //
   nh.spinOnce();
+  if (step_2 == 1)
+  {
+     digitalWrite(Enable, LOW);
+    for (int x = 0; x < stepsPerRevolution; x++)
+    {
+      digitalWrite(hSTEP_PIN, HIGH);
+      delayMicroseconds(600);
+      digitalWrite(hSTEP_PIN, LOW);
+      delayMicroseconds(600);
+    }
+  }
+  if (step_1 == 1)
+  {
+    for (int x = 0; x < stepsPerRevolution; x++)
+    {
+       digitalWrite(Enable, LOW);
+      digitalWrite(vSTEP_PIN, HIGH);
+      delayMicroseconds(600);
+      digitalWrite(vSTEP_PIN, LOW);
+      delayMicroseconds(600);
+    }
+  }
+  else if(step_2==0)
+  {
+    digitalWrite(Enable,HIGH);
+  }
   delay(1);
 
   // put your main code here, to run repeatedly:
