@@ -14,8 +14,8 @@
 #define pitch_dir 40
 #define motor_pwm_l_pin 8
 #define motor_pwm_r_pin 9
-#define motor_dir_r_pin 39
-#define motor_dir_l_pin 38
+#define motor_dir_r_pin 37
+#define motor_dir_l_pin 36
 #define wheel1_pwm 4
 #define wheel2_pwm 3
 #define wheel3_pwm 2
@@ -25,10 +25,6 @@
 #define wheel3_dir 32
 #define wheel4_dir 35
 #define Enable 12
-#define hDIRECTION_PIN 10
-#define hSTEP_PIN 11
-#define vDIRECTION_PIN 8
-#define vSTEP_PIN 1
 #define ser_pin 44
 
 ros::NodeHandle nh;
@@ -37,8 +33,6 @@ CytronMD wheel1(PWM_DIR, wheel1_pwm, wheel1_dir);
 CytronMD wheel2(PWM_DIR, wheel2_pwm, wheel2_dir);
 CytronMD wheel3(PWM_DIR, wheel3_pwm, wheel3_dir);
 CytronMD wheel4(PWM_DIR, wheel4_pwm, wheel4_dir);
-DRV8825 hstepper;
-DRV8825 vstepper;
 Servo myservo;
 
 
@@ -69,50 +63,6 @@ void servoCb( const std_msgs::Bool& msg){
   else
   {
     value=95;
-  }
-}
-
-void VStepperCB(const std_msgs::Int32 &vtrigger)
-{
-  if (vtrigger.data == 1)
-  {
-    vstepper.setDirection(DRV8825_COUNTERCLOCK_WISE);
-    for (int i = 0; i < 100; i++)
-    {
-      vstepper.step();
-      delay(1);
-    }
-  }
-  else if (vtrigger.data == -1)
-  {
-    vstepper.setDirection(DRV8825_CLOCK_WISE);
-    for (int i = 0; i < 100; i++)
-    {
-      vstepper.step();
-      delay(1);
-    }
-  }
-}
-
-void HStepperCB(const std_msgs::Int32 &htrigger)
-{
-  if (htrigger.data == 1)
-  {
-    hstepper.setDirection(DRV8825_COUNTERCLOCK_WISE);
-    for (int i = 0; i < 100; i++)
-    {
-      hstepper.step();
-      delay(2);
-    }
-  }
-  else if (htrigger.data == -1)
-  {
-    hstepper.setDirection(DRV8825_CLOCK_WISE);
-    for (int i = 0; i < 100; i++)
-    {
-      hstepper.step();
-      delay(2);
-    }
   }
 }
 void callback1(const geometry_msgs::Quaternion &msg)
@@ -172,14 +122,10 @@ ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
 // ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
 ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
 ros::Subscriber<std_msgs::Bool> sub_locoSpeed("locoSpeed", &locoSpeed);
-ros::Subscriber<std_msgs::Int32> vert("screw_power", &VStepperCB);
-ros::Subscriber<std_msgs::Int32> hori("belt_power", &HStepperCB);
 ros::Subscriber<std_msgs::Bool> sub_flick("flick", &servoCb );
 
 void setup()
 {
-  hstepper.begin(hDIRECTION_PIN, hSTEP_PIN);
-  vstepper.begin(vDIRECTION_PIN, vSTEP_PIN);
   pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
   digitalWrite(Enable, LOW);
   myservo.attach(ser_pin);
@@ -189,8 +135,6 @@ void setup()
   nh.subscribe(sub_pitch);
   nh.subscribe(sub_speed);
   nh.subscribe(sub_locoSpeed);
-  nh.subscribe(vert);
-  nh.subscribe(hori);
   nh.subscribe(sub_flick);
 
 //  nh.subscribe(sub_yaw);
@@ -224,8 +168,8 @@ pinMode(motor_pwm_r_pin, OUTPUT);
 pinMode(motor_dir_r_pin, OUTPUT);
 
 
-digitalWrite(motor_dir_l_pin, LOW);
-digitalWrite(motor_dir_r_pin, HIGH);
+digitalWrite(motor_dir_l_pin, HIGH);
+digitalWrite(motor_dir_r_pin, LOW);
 
 // digitalWrite(motor_dir_r_pin,LOW);
 
