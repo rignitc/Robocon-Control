@@ -88,9 +88,9 @@ void loop()
   }
   if (step_1 == 1)
   {
+    digitalWrite(Enable, LOW);
     for (int x = 0; x < stepsPerRevolution; x++)
     {
-       digitalWrite(Enable, LOW);
       digitalWrite(vSTEP_PIN, HIGH);
       delayMicroseconds(600);
       digitalWrite(vSTEP_PIN, LOW);
