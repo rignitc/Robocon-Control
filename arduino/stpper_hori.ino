@@ -77,6 +77,7 @@ void loop()
   nh.spinOnce();
   if (step_2 == 1)
   {
+     digitalWrite(Enable, LOW);
     for (int x = 0; x < stepsPerRevolution; x++)
     {
       digitalWrite(hSTEP_PIN, HIGH);
@@ -89,10 +90,15 @@ void loop()
   {
     for (int x = 0; x < stepsPerRevolution; x++)
     {
+       digitalWrite(Enable, LOW);
       digitalWrite(vSTEP_PIN, HIGH);
       delayMicroseconds(600);
       digitalWrite(vSTEP_PIN, LOW);
       delayMicroseconds(600);
     }
+  }
+  else if(step_2==0)
+  {
+    digitalWrite(Enable,HIGH);
   }
 }
