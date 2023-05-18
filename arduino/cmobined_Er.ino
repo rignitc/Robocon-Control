@@ -18,7 +18,7 @@
 #define motor_dir_l_pin 36
 #define wheel1_pwm 4
 #define wheel2_pwm 3
-#define wheel3_pwm 2
+#define wheel3_pwm 6
 #define wheel4_pwm 5
 #define wheel1_dir 34
 #define wheel2_dir 33
