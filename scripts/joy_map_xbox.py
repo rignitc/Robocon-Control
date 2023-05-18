@@ -47,11 +47,11 @@ def changer(value):
 def loco_finder(data):
     global loco
     loco.z=0
-    loco.x=-data.axes[1]
-    loco.y=data.axes[0]
-    if(data.buttons[3]==1):
+    loco.x=-data.axes[0]
+    loco.y=data.axes[1]
+    if(data.buttons[1]==1):
         loco.w=-1
-    elif(data.buttons[1]==1):
+    elif(data.buttons[3]==1):
         loco.w=1
     else:
         loco.w=0
@@ -65,7 +65,7 @@ def loco_finder(data):
 def yp_finder(data):
     global yaw,pitch,lock,yaw_lock,pitch_lock
     yaw_decimal=-data.axes[3]
-    pitch_decimal=data.axes[4]
+    pitch_decimal=-data.axes[4]
     if(yaw_lock==1):
         yaw.data=int(map_range(yaw_decimal,-1,1,-30,30))
     if(pitch_lock==1):
@@ -73,7 +73,7 @@ def yp_finder(data):
  
 def pick_control(data):
     global screw_power,belt_power,flick,speed,i
-    screw_power.data=int(data.axes[8])
+    screw_power.data=int(data.axes[6])
     belt_power.data=-int(data.axes[7])
     if(data.axes[2]==-1):
         flick.data=True
@@ -94,8 +94,8 @@ def joy_callback(data):
     global yaw_lock,pitch_lock
     loco_finder(data)
     # rospy.loginfo(data.axes)
-    if(data.buttons[5]==1):
-        yaw_lock=changer(yaw_lock)
+    # if(data.buttons[5]==1):
+    #     yaw_lock=changer(yaw_lock)
     if(data.axes[5]==-1):
         pitch_lock=changer(pitch_lock)
     yp_finder(data)
