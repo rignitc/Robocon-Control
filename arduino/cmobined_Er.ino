@@ -6,7 +6,6 @@
 #include <std_msgs/Bool.h>
 #include "CytronMotorDriver.h"
 #include "DRV8825.h"
-#include <Servo.h>
 
 // #define yaw_pwm 6
 // #define yaw_dir 6
@@ -25,7 +24,10 @@
 #define wheel3_dir 32
 #define wheel4_dir 35
 #define Enable 12
-#define ser_pin 44
+#define Flick_Dir 22
+#define Flick_PWM 23
+#define Limit_FlickFront 21
+#define Limit_FlickBack 20
 
 ros::NodeHandle nh;
 CytronMD actuator(PWM_DIR, pitch_pwm, pitch_dir);
@@ -33,7 +35,7 @@ CytronMD wheel1(PWM_DIR, wheel1_pwm, wheel1_dir);
 CytronMD wheel2(PWM_DIR, wheel2_pwm, wheel2_dir);
 CytronMD wheel3(PWM_DIR, wheel3_pwm, wheel3_dir);
 CytronMD wheel4(PWM_DIR, wheel4_pwm, wheel4_dir);
-Servo myservo;
+CytronMD flicker(PWM_DIR, Flick_PWM, Flick_Dir);
 
 
 // CytronMD motor_l(PWM_DIR,motor_pwm_l,motor)
@@ -47,6 +49,8 @@ int pwm_array[] = {0, 160, 200, 255};
 float multiplier_array[] = {0.25, 1};
 int multiplier_index = 0;
 int value=0;
+int flickback ,flickfront =0;
+int curr =0;
 
 
 int motor_pwm = pwm_array[pwm_index];
@@ -55,16 +59,31 @@ float multiplier = 1;
 int prev_speed_time = 0;
 int prev_locoSpeed_time = 0;
 
-void servoCb( const std_msgs::Bool& msg){
-  if (msg.data)
-  {
-     value=65;
-  }
-  else
-  {
-    value=95;
-  }
+void FlickBack(){
+        curr = millis();
+        if(curr-flickback >= 500){
+          Serial.print("back");
+          flicker.setSpeed(0);
+          flickback = curr;
+        }         
 }
+
+void FlickFront(){
+        curr = millis();
+        if(curr-flickback >= 500){
+          Serial.print("back");
+          flicker.setSpeed(-255);
+          flickback = curr;
+        }
+}
+
+void Flicker( const std_msgs::Bool& msg){           // DC MOtor
+  if (msg.data){
+        flicker.setSpeed(255);
+  }
+  
+}
+
 void callback1(const geometry_msgs::Quaternion &msg)
 {
 
@@ -122,13 +141,12 @@ ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
 // ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
 ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
 ros::Subscriber<std_msgs::Bool> sub_locoSpeed("locoSpeed", &locoSpeed);
-ros::Subscriber<std_msgs::Bool> sub_flick("flick", &servoCb );
+ros::Subscriber<std_msgs::Bool> sub_flick("flick", &Flicker );
 
 void setup()
 {
   pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
   digitalWrite(Enable, LOW);
-  myservo.attach(ser_pin);
   // NODE
   nh.initNode();
   nh.subscribe(sub1);
@@ -173,7 +191,8 @@ digitalWrite(motor_dir_r_pin, LOW);
 
 // digitalWrite(motor_dir_r_pin,LOW);
 
-// put your setup code here, to run once:
+attachInterrupt(digitalPinToInterrupt(Limit_FlickBack), FlickBack, RISING);
+attachInterrupt(digitalPinToInterrupt(Limit_FlickFront), FlickFront, RISING);
 }
 
 void loop()
@@ -182,8 +201,6 @@ void loop()
   wheel2.setSpeed(PWM2 * multiplier);
   wheel3.setSpeed(PWM3 * multiplier);
   wheel4.setSpeed(PWM4 * multiplier);
-  myservo.write(value);
-
   analogWrite(motor_pwm_l_pin, motor_pwm);
   analogWrite(motor_pwm_r_pin,motor_pwm);
 
