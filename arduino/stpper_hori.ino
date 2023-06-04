@@ -1,20 +1,17 @@
-#include "DRV8825.h"
 #include <Arduino.h>
 #include <ros.h>
 #include <std_msgs/Int32.h>
-#define Enable 8
+//#define Enable 8
 
 ros::NodeHandle nh;
 
-DRV8825 hstepper;
-DRV8825 vstepper;
-
 const int hDIRECTION_PIN = 5;
 const int hSTEP_PIN = 2;
-
-const int vDIRECTION_PIN = 6;
-const int vSTEP_PIN = 3;
-const int stepsPerRevolution=200;
+const int vDIRECTION_PIN = 9;
+const int vSTEP_PIN = 8;
+const int vDIRECTION_PIN2 = 2;
+const int vSTEP_PIN2 = 3;
+const int stepsPerRevolution = 200;
 
 int step_1 = 0;
 int step_2 = 0;
@@ -27,10 +24,12 @@ void VStepperCB(const std_msgs::Int32 &vtrigger)
     if (vtrigger.data == 1)
     {
       digitalWrite(vDIRECTION_PIN, HIGH);
+      digitalWrite(vDIRECTION_PIN2, HIGH);
     }
     else
     {
       digitalWrite(vDIRECTION_PIN, LOW);
+      digitalWrite(vDIRECTION_PIN2, LOW);
     }
   }
   else
@@ -64,10 +63,14 @@ ros::Subscriber<std_msgs::Int32> hori("belt_power", &HStepperCB);
 
 void setup()
 {
-  // hstepper.begin(hDIRECTION_PIN, hSTEP_PIN);
-  // vstepper.begin(vDIRECTION_PIN, vSTEP_PIN);
-  pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
-  digitalWrite(Enable, LOW);
+//  pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
+//  digitalWrite(Enable, LOW);
+  pinMode(hDIRECTION_PIN, OUTPUT);
+  pinMode(vDIRECTION_PIN2, OUTPUT);
+  pinMode(vDIRECTION_PIN, OUTPUT);
+  pinMode(hSTEP_PIN, OUTPUT);
+  pinMode(vSTEP_PIN2, OUTPUT);
+  pinMode(vSTEP_PIN, OUTPUT);
   nh.initNode();
   nh.subscribe(vert);
   nh.subscribe(hori);
@@ -77,7 +80,7 @@ void loop()
   nh.spinOnce();
   if (step_2 == 1)
   {
-     digitalWrite(Enable, LOW);
+//    digitalWrite(Enable, LOW);
     for (int x = 0; x < stepsPerRevolution; x++)
     {
       digitalWrite(hSTEP_PIN, HIGH);
@@ -88,17 +91,19 @@ void loop()
   }
   if (step_1 == 1)
   {
-    digitalWrite(Enable, LOW);
+//    digitalWrite(Enable, LOW);
     for (int x = 0; x < stepsPerRevolution; x++)
     {
       digitalWrite(vSTEP_PIN, HIGH);
+      digitalWrite(vSTEP_PIN2, HIGH);
       delayMicroseconds(600);
       digitalWrite(vSTEP_PIN, LOW);
+      digitalWrite(vSTEP_PIN2, LOW);
       delayMicroseconds(600);
     }
   }
-  else if(step_2==0)
+  else if (step_2 == 0)
   {
-    digitalWrite(Enable,HIGH);
+//    digitalWrite(Enable, HIGH);
   }
 }
