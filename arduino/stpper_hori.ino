@@ -1,16 +1,18 @@
 #include <Arduino.h>
 #include <ros.h>
 #include <std_msgs/Int32.h>
-//#define Enable 8
+#define Enable 7
 
 ros::NodeHandle nh;
 
-const int hDIRECTION_PIN = 5;
-const int hSTEP_PIN = 2;
-const int vDIRECTION_PIN = 9;
-const int vSTEP_PIN = 8;
-const int vDIRECTION_PIN2 = 2;
-const int vSTEP_PIN2 = 3;
+const int hDIRECTION_PIN = 10;
+const int hSTEP_PIN = 11;
+const int vDIRECTION_PIN = 4;
+const int vSTEP_PIN = 3;
+const int vDIRECTION_PIN2 = 9;
+const int vSTEP_PIN2 = 8;
+const int vlim_top = 12;
+const int vlim_bot = 11;
 const int stepsPerRevolution = 200;
 
 int step_1 = 0;
@@ -23,13 +25,29 @@ void VStepperCB(const std_msgs::Int32 &vtrigger)
     step_1 = 1;
     if (vtrigger.data == 1)
     {
+      if (digitalRead(vlim_top))
+      {
       digitalWrite(vDIRECTION_PIN, HIGH);
       digitalWrite(vDIRECTION_PIN2, HIGH);
+      }
+      else
+      {
+        digitalWrite(vDIRECTION_PIN, LOW);
+        digitalWrite(vDIRECTION_PIN2, LOW);
+      }
     }
-    else
+    else if (vtrigger.data == -1)
     {
+      if (digitalRead(vlim_bot))
+      {
       digitalWrite(vDIRECTION_PIN, LOW);
       digitalWrite(vDIRECTION_PIN2, LOW);
+      }
+      else
+      {
+        digitalWrite(vDIRECTION_PIN, HIGH);
+        digitalWrite(vDIRECTION_PIN2, HIGH);
+      }
     }
   }
   else
@@ -63,14 +81,16 @@ ros::Subscriber<std_msgs::Int32> hori("belt_power", &HStepperCB);
 
 void setup()
 {
-//  pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
-//  digitalWrite(Enable, LOW);
+  pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
+  digitalWrite(Enable, LOW);
   pinMode(hDIRECTION_PIN, OUTPUT);
   pinMode(vDIRECTION_PIN2, OUTPUT);
   pinMode(vDIRECTION_PIN, OUTPUT);
   pinMode(hSTEP_PIN, OUTPUT);
   pinMode(vSTEP_PIN2, OUTPUT);
   pinMode(vSTEP_PIN, OUTPUT);
+  pinMode(vlim_top, INPUT_PULLUP);
+  pinMode(vlim_bot, INPUT_PULLUP);
   nh.initNode();
   nh.subscribe(vert);
   nh.subscribe(hori);
@@ -80,7 +100,7 @@ void loop()
   nh.spinOnce();
   if (step_2 == 1)
   {
-//    digitalWrite(Enable, LOW);
+     digitalWrite(Enable, LOW);
     for (int x = 0; x < stepsPerRevolution; x++)
     {
       digitalWrite(hSTEP_PIN, HIGH);
@@ -91,7 +111,7 @@ void loop()
   }
   if (step_1 == 1)
   {
-//    digitalWrite(Enable, LOW);
+    digitalWrite(Enable, LOW);
     for (int x = 0; x < stepsPerRevolution; x++)
     {
       digitalWrite(vSTEP_PIN, HIGH);
@@ -104,6 +124,6 @@ void loop()
   }
   else if (step_2 == 0)
   {
-//    digitalWrite(Enable, HIGH);
+    digitalWrite(Enable, HIGH);
   }
 }
