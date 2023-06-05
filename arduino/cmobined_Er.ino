@@ -62,7 +62,6 @@ int prev_locoSpeed_time = 0;
 void FlickBack(){
         curr = millis();
         if(curr-flickback >= 500){
-          Serial.print("back");
           flicker.setSpeed(0);
           flickback = curr;
         }         
@@ -70,10 +69,9 @@ void FlickBack(){
 
 void FlickFront(){
         curr = millis();
-        if(curr-flickback >= 500){
-          Serial.print("back");
+        if(curr-flickfront >= 500){
           flicker.setSpeed(-255);
-          flickback = curr;
+          flickfront = curr;
         }
 }
 
@@ -185,6 +183,8 @@ pinMode(motor_dir_l_pin, OUTPUT);
 pinMode(motor_pwm_r_pin, OUTPUT);
 pinMode(motor_dir_r_pin, OUTPUT);
 
+pinMode(Limit_FlickBack, INPUT_PULLUP);
+pinMode(Limit_FlickFront, INPUT_PULLUP);
 
 digitalWrite(motor_dir_l_pin, HIGH);
 digitalWrite(motor_dir_r_pin, LOW);
