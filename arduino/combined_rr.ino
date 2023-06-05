@@ -6,10 +6,8 @@
 #include <std_msgs/Bool.h>
 #include "CytronMotorDriver.h"
 #include "DRV8825.h"
-#include <Servo.h>
+//#include <Servo.h>
 
-// #define yaw_pwm 6
-// #define yaw_dir 6
 #define pitch_pwm 45
 #define pitch_dir 37
 #define motor_pwm_l_pin 6
@@ -24,12 +22,12 @@
 #define wheel2_dir 33
 #define wheel3_dir 34
 #define wheel4_dir 35
-#define Enable 12
-#define hDIRECTION_PIN 10
-#define hSTEP_PIN 11
-#define vDIRECTION_PIN 8
-#define vSTEP_PIN 9
-#define ser_pin 44
+//#define Enable 12
+#define Flick_Dir 38
+#define Flick_PWM 8
+#define Limit_FlickFront 19
+#define Limit_FlickBack 18
+const int max_flick_rpm = 120;
 
 ros::NodeHandle nh;
 CytronMD actuator(PWM_DIR, pitch_pwm, pitch_dir);
@@ -37,9 +35,8 @@ CytronMD wheel1(PWM_DIR, wheel1_pwm, wheel1_dir);
 CytronMD wheel2(PWM_DIR, wheel2_pwm, wheel2_dir);
 CytronMD wheel3(PWM_DIR, wheel3_pwm, wheel3_dir);
 CytronMD wheel4(PWM_DIR, wheel4_pwm, wheel4_dir);
-DRV8825 hstepper;
-DRV8825 vstepper;
-Servo myservo;
+CytronMD flicker(PWM_DIR, Flick_PWM, Flick_Dir);
+//Servo myservo;
 
 
 // CytronMD motor_l(PWM_DIR,motor_pwm_l,motor)
@@ -53,6 +50,8 @@ int pwm_array[] = {0, 160, 200, 255};
 float multiplier_array[] = {0.25, 1};
 int multiplier_index = 0;
 int value=0;
+int flickback ,flickfront =0;
+int curr =0;
 
 
 int motor_pwm = pwm_array[pwm_index];
@@ -60,59 +59,30 @@ int act_pwm;
 float multiplier = 1;
 int prev_speed_time = 0;
 int prev_locoSpeed_time = 0;
-const int stepsPerRevolution=200;
-int step_1 = 0;
-int step_2 = 0;
 
-void servoCb( const std_msgs::Bool& msg){
-  if (msg.data)
-  {
-     value=65;
-  }
-  else
-  {
-    value=95;
-  }
+void FlickBack(){
+        curr = millis();
+        if(curr-flickback >= 100){
+          Serial.print("back");
+          flicker.setSpeed(0);
+          flickback = curr;
+        }         
 }
 
-void VStepperCB(const std_msgs::Int32 &vtrigger)
-{
-  if (vtrigger.data != 0)
-  {
-    step_1 = 1;
-    if (vtrigger.data == 1)
-    {
-      digitalWrite(vDIRECTION_PIN, HIGH);
-    }
-    else
-    {
-      digitalWrite(vDIRECTION_PIN, LOW);
-    }
-  }
-  else
-  {
-    step_1 = 0;
-  }
+void FlickFront(){
+//        curr = millis();
+//        if(curr-flickfront >= 100){
+//          Serial.print("front");
+          flicker.setSpeed(120);
+//          flickfront = curr;
+//        }
 }
 
-void HStepperCB(const std_msgs::Int32 &htrigger)
-{
-  if (htrigger.data != 0)
-  {
-    step_2 = 1;
-    if (htrigger.data == 1)
-    {
-      digitalWrite(hDIRECTION_PIN, HIGH);
-    }
-    else
-    {
-      digitalWrite(hDIRECTION_PIN, LOW);
-    }
+void Flicker( const std_msgs::Bool& msg){           // DC MOtor
+  if (msg.data){
+        flicker.setSpeed(-120);
   }
-  else
-  {
-    step_2 = 0;
-  }
+  
 }
 void callback1(const geometry_msgs::Quaternion &msg)
 {
@@ -171,25 +141,17 @@ ros::Subscriber<std_msgs::Int32> sub_pitch("target_pitch", &callback_pitch);
 // ros::Subscriber<geometry_msgs::Int32> sub_yaw("target_yaw", &callback_yaw);
 ros::Subscriber<std_msgs::Bool> sub_speed("speed", &callback_speed);
 ros::Subscriber<std_msgs::Bool> sub_locoSpeed("locoSpeed", &locoSpeed);
-ros::Subscriber<std_msgs::Int32> vert("screw_power", &VStepperCB);
-ros::Subscriber<std_msgs::Int32> hori("belt_power", &HStepperCB);
-ros::Subscriber<std_msgs::Bool> sub_flick("flick", &servoCb );
+ros::Subscriber<std_msgs::Bool> sub_flick("flick", &Flicker );
 
 void setup()
 {
-//  hstepper.begin(hDIRECTION_PIN, hSTEP_PIN);
-//  vstepper.begin(vDIRECTION_PIN, vSTEP_PIN);
-  pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
-  digitalWrite(Enable, LOW);
-  myservo.attach(ser_pin);
+//  myservo.attach(ser_pin);
   // NODE
   nh.initNode();
   nh.subscribe(sub1);
   nh.subscribe(sub_pitch);
   nh.subscribe(sub_speed);
   nh.subscribe(sub_locoSpeed);
-  nh.subscribe(vert);
-  nh.subscribe(hori);
   nh.subscribe(sub_flick);
 
 //  nh.subscribe(sub_yaw);
@@ -220,9 +182,18 @@ pinMode(wheel4_pwm, OUTPUT);
 pinMode(motor_pwm_l_pin, OUTPUT);
 pinMode(motor_dir_l_pin, OUTPUT);
 
-// flick_servo.attach(flick_servo_pin);
+pinMode(Limit_FlickBack,INPUT_PULLUP);
+pinMode(Limit_FlickFront,INPUT_PULLUP);
 
 digitalWrite(motor_dir_l_pin, HIGH);
+digitalWrite(motor_pwm_l_pin, LOW);
+
+pinMode(Flick_Dir,OUTPUT);
+pinMode(Flick_PWM,OUTPUT);
+
+attachInterrupt(digitalPinToInterrupt(Limit_FlickBack), FlickBack, RISING);
+attachInterrupt(digitalPinToInterrupt(Limit_FlickFront), FlickFront, RISING);
+
 // digitalWrite(motor_dir_r_pin,LOW);
 
 // put your setup code here, to run once:
@@ -234,42 +205,15 @@ void loop()
   wheel2.setSpeed(PWM2 * multiplier);
   wheel3.setSpeed(PWM3 * multiplier);
   wheel4.setSpeed(PWM4 * multiplier);
-  myservo.write(value);
+//  myservo.write(value);
 
   analogWrite(motor_pwm_l_pin, motor_pwm);
-  //  analogWrite(motor_pwm_r_pin,motor_pwm);
 
   analogWrite(2, abs(PWM4));
   actuator.setSpeed(act_pwm);
 
   //
   nh.spinOnce();
-  if (step_2 == 1)
-  {
-     digitalWrite(Enable, LOW);
-    for (int x = 0; x < stepsPerRevolution; x++)
-    {
-      digitalWrite(hSTEP_PIN, HIGH);
-      delayMicroseconds(600);
-      digitalWrite(hSTEP_PIN, LOW);
-      delayMicroseconds(600);
-    }
-  }
-  if (step_1 == 1)
-  {
-    for (int x = 0; x < stepsPerRevolution; x++)
-    {
-       digitalWrite(Enable, LOW);
-      digitalWrite(vSTEP_PIN, HIGH);
-      delayMicroseconds(600);
-      digitalWrite(vSTEP_PIN, LOW);
-      delayMicroseconds(600);
-    }
-  }
-  else if(step_2==0)
-  {
-    digitalWrite(Enable,HIGH);
-  }
   delay(1);
 
   // put your main code here, to run repeatedly:
