@@ -193,6 +193,7 @@ digitalWrite(motor_dir_r_pin, LOW);
 
 attachInterrupt(digitalPinToInterrupt(Limit_FlickBack), FlickBack, RISING);
 attachInterrupt(digitalPinToInterrupt(Limit_FlickFront), FlickFront, RISING);
+
 }
 
 void loop()
