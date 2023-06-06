@@ -1,0 +1,13 @@
+<launch>
+
+  <group ns="ER">
+    <node pkg="robo23" name="loco" type="er_loco.py"/>
+    <node pkg="robo23" name="joystick" type="joy_map_xbox.py" output="screen"/>
+    <node pkg="joy" name="taker" type="joy_node"/>
+    <!-- <node pkg="rosserial_python" name="arduino_connect" type="serial_node.py" output="screen">
+        <param name="port" value="/dev/ttyUSB0"/>
+    </node> -->
+
+  </group>
+
+</launch>
