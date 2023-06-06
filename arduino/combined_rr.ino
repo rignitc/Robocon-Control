@@ -25,8 +25,8 @@
 //#define Enable 12
 #define Flick_Dir 38
 #define Flick_PWM 8
-#define Limit_FlickFront 19
-#define Limit_FlickBack 18
+#define Limit_FlickFront 18
+#define Limit_FlickBack 19
 const int max_flick_rpm = 120;
 
 ros::NodeHandle nh;
@@ -52,6 +52,7 @@ int multiplier_index = 0;
 int value=0;
 int flickback ,flickfront =0;
 int curr =0;
+bool flick=false;
 
 
 int motor_pwm = pwm_array[pwm_index];
@@ -60,29 +61,23 @@ float multiplier = 1;
 int prev_speed_time = 0;
 int prev_locoSpeed_time = 0;
 
-void FlickBack(){
-        curr = millis();
-        if(curr-flickback >= 100){
-          Serial.print("back");
-          flicker.setSpeed(0);
-          flickback = curr;
-        }         
-}
-
-void FlickFront(){
-//        curr = millis();
-//        if(curr-flickfront >= 100){
-//          Serial.print("front");
-          flicker.setSpeed(120);
-//          flickfront = curr;
-//        }
+void flick_fn()
+{
+   while(digitalRead(Limit_FlickFront))
+   {
+    flicker.setSpeed(-120);
+    delay(50);
+   }
+   while(digitalRead(Limit_FlickBack))
+   {
+    flicker.setSpeed(120);
+    delay(50);
+   }
+   flicker.setSpeed(0);
 }
 
 void Flicker( const std_msgs::Bool& msg){           // DC MOtor
-  if (msg.data){
-        flicker.setSpeed(-120);
-  }
-  
+    flick=msg.data;
 }
 void callback1(const geometry_msgs::Quaternion &msg)
 {
@@ -191,9 +186,6 @@ digitalWrite(motor_pwm_l_pin, LOW);
 pinMode(Flick_Dir,OUTPUT);
 pinMode(Flick_PWM,OUTPUT);
 
-attachInterrupt(digitalPinToInterrupt(Limit_FlickBack), FlickBack, RISING);
-attachInterrupt(digitalPinToInterrupt(Limit_FlickFront), FlickFront, RISING);
-
 // digitalWrite(motor_dir_r_pin,LOW);
 
 // put your setup code here, to run once:
@@ -211,6 +203,11 @@ void loop()
 
   analogWrite(2, abs(PWM4));
   actuator.setSpeed(act_pwm);
+  if(flick)
+  {
+    flick_fn();
+    delay(300);
+  }
 
   //
   nh.spinOnce();
