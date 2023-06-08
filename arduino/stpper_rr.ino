@@ -7,8 +7,8 @@ ros::NodeHandle nh;
 
 const int hDIRECTION_PIN = 5;
 const int hSTEP_PIN = 2;
-const int vDIRECTION_PIN = 7;
-const int vSTEP_PIN = 6;
+const int vDIRECTION_PIN = 6;
+const int vSTEP_PIN = 3;
 const int vlim_top = 12;
 const int vlim_bot = 11;
 const int stepsPerRevolution = 200;
@@ -30,9 +30,7 @@ void VStepperCB(const std_msgs::Int32 &vtrigger)
       }
       else
       {
-//        digitalWrite(vDIRECTION_PIN, LOW);
           step_1=0;
-//        digitalWrite(vDIRECTION_PIN2, LOW);
       }
     }
     else if (vtrigger.data == -1)
@@ -82,7 +80,7 @@ ros::Subscriber<std_msgs::Int32> hori("belt_power", &HStepperCB);
 void setup()
 {
   pinMode(Enable, OUTPUT); // to make enable zero. Its connected to 8 in sheild
-  digitalWrite(Enable, LOW);
+  digitalWrite(Enable, HIGH);
   pinMode(hDIRECTION_PIN, OUTPUT);
 //  pinMode(vDIRECTION_PIN2, OUTPUT);
   pinMode(vDIRECTION_PIN, OUTPUT);
@@ -106,7 +104,7 @@ void loop()
       digitalWrite(hSTEP_PIN, HIGH);
       delayMicroseconds(600);
       digitalWrite(hSTEP_PIN, LOW);
-      delayMicro          step_1=0;seconds(600);
+      delayMicroseconds(600);
     }
   }
   if (step_1 == 1)

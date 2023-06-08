@@ -26,8 +26,8 @@
 #define Enable 12
 #define Flick_Dir 22
 #define Flick_PWM 23
-#define Limit_FlickFront 21
-#define Limit_FlickBack 20
+#define Limit_FlickFront 19
+#define Limit_FlickBack 18
 
 ros::NodeHandle nh;
 CytronMD actuator(PWM_DIR, pitch_pwm, pitch_dir);
@@ -51,6 +51,7 @@ int multiplier_index = 0;
 int value=0;
 int flickback ,flickfront =0;
 int curr =0;
+bool flick=false;
 
 
 int motor_pwm = pwm_array[pwm_index];
@@ -59,27 +60,23 @@ float multiplier = 1;
 int prev_speed_time = 0;
 int prev_locoSpeed_time = 0;
 
-void FlickBack(){
-        curr = millis();
-        if(curr-flickback >= 500){
-          flicker.setSpeed(0);
-          flickback = curr;
-        }         
-}
-
-void FlickFront(){
-        curr = millis();
-        if(curr-flickfront >= 500){
-          flicker.setSpeed(-255);
-          flickfront = curr;
-        }
+void flick_fn()
+{
+   while(digitalRead(Limit_FlickFront))
+   {
+    flicker.setSpeed(-150);
+    delay(50);
+   }
+   while(digitalRead(Limit_FlickBack))
+   {
+    flicker.setSpeed(150);
+    delay(50);
+   }
+   flicker.setSpeed(0);
 }
 
 void Flicker( const std_msgs::Bool& msg){           // DC MOtor
-  if (msg.data){
-        flicker.setSpeed(255);
-  }
-  
+    flick=msg.data;
 }
 
 void callback1(const geometry_msgs::Quaternion &msg)
@@ -183,16 +180,18 @@ pinMode(motor_dir_l_pin, OUTPUT);
 pinMode(motor_pwm_r_pin, OUTPUT);
 pinMode(motor_dir_r_pin, OUTPUT);
 
-pinMode(Limit_FlickBack, INPUT_PULLUP);
-pinMode(Limit_FlickFront, INPUT_PULLUP);
+pinMode(Limit_FlickBack,INPUT_PULLUP);
+pinMode(Limit_FlickFront,INPUT_PULLUP);
+
 
 digitalWrite(motor_dir_l_pin, HIGH);
 digitalWrite(motor_dir_r_pin, LOW);
 
-// digitalWrite(motor_dir_r_pin,LOW);
+pinMode(Flick_Dir,OUTPUT);
+pinMode(Flick_PWM,OUTPUT);
 
-attachInterrupt(digitalPinToInterrupt(Limit_FlickBack), FlickBack, RISING);
-attachInterrupt(digitalPinToInterrupt(Limit_FlickFront), FlickFront, RISING);
+
+// digitalWrite(motor_dir_r_pin,LOW);
 
 }
 
@@ -207,6 +206,11 @@ void loop()
 
   analogWrite(2, abs(PWM4));
   actuator.setSpeed(act_pwm);
+    if(flick)
+  {
+    flick_fn();
+    delay(300);
+  }
 
   //
   nh.spinOnce();

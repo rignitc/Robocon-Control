@@ -1,17 +1,17 @@
 #include <Arduino.h>
 #include <ros.h>
 #include <std_msgs/Int32.h>
-#define Enable 7
+#define Enable 9
 
 ros::NodeHandle nh;
 
-const int hDIRECTION_PIN = 10;
-const int hSTEP_PIN = 11;
-const int vDIRECTION_PIN = 4;
-const int vSTEP_PIN = 3;
-const int vDIRECTION_PIN2 = 9;
-const int vSTEP_PIN2 = 8;
-const int vlim_top = 12;
+const int hDIRECTION_PIN = 3;
+const int hSTEP_PIN = 4;
+const int vDIRECTION_PIN = 7;
+const int vSTEP_PIN = 8;
+const int vDIRECTION_PIN2 = 5;
+const int vSTEP_PIN2 = 6;
+const int vlim_top = 14;
 const int vlim_bot = 11;
 const int stepsPerRevolution = 200;
 
@@ -32,8 +32,9 @@ void VStepperCB(const std_msgs::Int32 &vtrigger)
       }
       else
       {
-        digitalWrite(vDIRECTION_PIN, LOW);
-        digitalWrite(vDIRECTION_PIN2, LOW);
+//        digitalWrite(vDIRECTION_PIN, LOW);
+//        digitalWrite(vDIRECTION_PIN2, LOW);
+          step_1=0;
       }
     }
     else if (vtrigger.data == -1)
@@ -45,8 +46,9 @@ void VStepperCB(const std_msgs::Int32 &vtrigger)
       }
       else
       {
-        digitalWrite(vDIRECTION_PIN, HIGH);
-        digitalWrite(vDIRECTION_PIN2, HIGH);
+//        digitalWrite(vDIRECTION_PIN, HIGH);
+//        digitalWrite(vDIRECTION_PIN2, HIGH);
+          step_1=0;
       }
     }
   }
@@ -76,8 +78,8 @@ void HStepperCB(const std_msgs::Int32 &htrigger)
   }
 }
 
-ros::Subscriber<std_msgs::Int32> vert("screw_power", &VStepperCB);
-ros::Subscriber<std_msgs::Int32> hori("belt_power", &HStepperCB);
+ros::Subscriber<std_msgs::Int32> vert("screw_power", &HStepperCB);
+ros::Subscriber<std_msgs::Int32> hori("belt_power", &VStepperCB);
 
 void setup()
 {
@@ -91,6 +93,8 @@ void setup()
   pinMode(vSTEP_PIN, OUTPUT);
   pinMode(vlim_top, INPUT_PULLUP);
   pinMode(vlim_bot, INPUT_PULLUP);
+  pinMode(12,OUTPUT);
+  digitalWrite(12,HIGH);
   nh.initNode();
   nh.subscribe(vert);
   nh.subscribe(hori);
